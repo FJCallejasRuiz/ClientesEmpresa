@@ -1,11 +1,15 @@
 package org.iesalandalus.programacion.clientesempresa.modelo.dominio;
 
+import java.time.LocalDate;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.exception.NullArgumentException;
+
 public class Cliente {
 
-	private final String ER_CORREO;
+	private final String ER_CORREO = "([\\w.]+[@][\\w.]+[\\w]+)";
 	private final String ER_DNI = "([0-9]{8})([A-Za-z])";
 	private final String ER_TELEFONO = "([0-9]{9})";
 	private String nombre, dni, correo, telefono; // Ponemos por separado los ER ya que entendemos que vienen de
@@ -13,7 +17,36 @@ public class Cliente {
 
 	public String FORMATO_FECHA;
 
-	private EDate fechaNacimiento;
+	private LocalDate fechaNacimiento=LocalDate.now();
+
+	public Cliente(String nombre, String dni, String correo, String telefono, LocalDate fechaNacimiento) {
+		if (nombre == null) {
+			throw new NullPointerException("ERROR: El nombre de un cliente no puede ser nulo."); // constructor con parametros que llama a los setters
+																	// de cada cosa
+		} else if (dni == null) {
+			throw new NullPointerException("ERROR: El dni de un cliente no puede ser nulo.");
+			
+		}else if (correo == null) {
+			throw new NullPointerException("ERROR: El correo de un cliente no puede ser nulo.");
+			
+		}else if (telefono == null) {
+			throw new NullPointerException("ERROR: El teléfono de un cliente no puede ser nulo.");
+		}else if (fechaNacimiento == null) {
+			throw new NullPointerException("ERROR: La fecha de nacimiento de un cliente no puede ser nula.");
+		}
+			this.setNombre(nombre);
+		this.setDni(dni);
+		this.setCorreo(correo);
+		this.setTelefono(telefono);
+		this.setFechaNacimiento(fechaNacimiento);;
+	}
+
+	public Cliente(Cliente cliente) { // constructor copia para evitar aliasing.
+		if (cliente == null) {
+			throw new NullPointerException("ERROR: No es posible copiar un cliente nulo.");
+		} else
+			cliente = new Cliente(cliente);
+	}
 
 	private String formateaNombre(String nombre) {
 
@@ -26,7 +59,7 @@ public class Cliente {
 		arrayTemp[0] = Character.toUpperCase(arrayTemp[0]); // Hacemos que ya de primeras la primera letra sea
 															// mayúscula.
 
-		for (int i = 0; i < nombreMin.length(); i++) {
+		for (int i = 0; i < nombreMin.length() - 1; i++) {
 
 			if (arrayTemp[i] == ' ' || arrayTemp[i] == '.' || arrayTemp[i] == ',') {
 				arrayTemp[i + 1] = Character.toUpperCase(arrayTemp[i + 1]); // De esta forma va mirando cada letra y
@@ -35,9 +68,9 @@ public class Cliente {
 																			// que se da por sentado que sería el
 																			// apellido o tal.
 			}
-			return new String(arrayTemp);
-		}
 
+		}
+		return new String(arrayTemp);
 	}
 
 	private boolean comprobarLetraDni(String dni) {
@@ -57,9 +90,10 @@ public class Cliente {
 
 		String letraStringDni = String.valueOf(letraTempDni); // lo convierte a string
 
-		if (letraStringDni.equals(compara.group(2))) { // Si el string que nos averigua la letra, haciendo el resto de
+		if (letraStringDni.matches(compara.group(2))) { // Si el string que nos averigua la letra, haciendo el resto de
 														// 23 del numero del dni, es igual que el grupo 2, es decir
-														// ([A-Za-z]), nos devuelve true, si no devuelve false.
+														// ([A-Za-z]), nos devuelve true, si no devuelve false. (seria
+														// matches)
 			return true;
 		} else
 			return false;
@@ -67,61 +101,155 @@ public class Cliente {
 	}
 
 	public String getNombre() {
-		return nombre;
+		return new String(nombre);
 	}
 
 	public void setNombre(String nombre) {
-		this.nombre = nombre;
 		if (nombre == null) {
-			throw new NullPointerException("ERROR: El nombre no puede ser nulo."); //Solo confirmamos que el nombre no sea null
-		} else
+			throw new NullPointerException("ERROR: El nombre no puede ser nulo."); // Solo confirmamos que el nombre no
+																					// sea null
+		} else if (nombre == "") {
+			throw new IllegalArgumentException("ERROR: El nombre debe ser válido.");
+		}else
 			this.nombre = nombre;
 	}
 
 	public String getDni() {
-		return dni;
+
+		return new String(dni);
 	}
 
 	private void setDni(String dni) {
 		if (dni == null) {
 			throw new NullPointerException("ERROR: El DNI no puede ser nulo.");
-		} else if (dni.length() != 9) {
-			throw new IllegalArgumentException("ERROR: El DNI debe ser de 8 números y una letra.");
-		} else
-			this.dni = dni; //confirmamos que el DNI no sea nulo ni que tenga menos de 9 caracteres.
+
+		} else {
+
+			Pattern patronDni;
+			Matcher comparaDni;
+
+			patronDni = Pattern.compile(ER_DNI);
+			comparaDni = patronDni.matcher(dni);
+			int dniNumero = Integer.parseInt(comparaDni.group(1));
+			String stringTemporalDniNumero = String.valueOf(dniNumero);
+			if (stringTemporalDniNumero.matches(comparaDni.group(1))) {
+				if (comprobarLetraDni(dni)) {
+					this.dni = dni;
+				}
+				throw new IllegalArgumentException("ERROR: ADFAD");
+			} else
+				throw new IllegalArgumentException("ERROR: PIOWEIRSODF");// De esta forma, hacemos un IF para
+																			// asegurarnos que los numeros sean iguales,
+																			// para saber si la letra está bien pues ya
+																			// llamamos al comprobador, entonces si todo
+																			// esta bien hacer un this.
+
+		}
+
 	}
 
 	public String getCorreo() {
-		return correo;
+		return new String(correo);
 	}
 
 	public void setCorreo(String correo) {
 
 		if (correo == null) {
-			throw new NullPointerException("ERROR: El correo no puede ser nulo."); //Solo confirmamos que el correo no sea null
-		} else
-			this.correo = correo;
+			throw new NullPointerException("ERROR: El correo no puede ser nulo."); // Solo confirmamos que el correo no
+																					// sea null
+		} else {
+
+			Pattern patronCorreo;
+			Matcher comparaCorreo;
+
+			patronCorreo = Pattern.compile(ER_CORREO);
+			comparaCorreo = patronCorreo.matcher(correo);
+			if (correo.matches(comparaCorreo.group(1)))
+				this.correo = correo;
+		}
+		throw new IllegalArgumentException("ERROR: sjfsdfjdshlfsdjk.");
+
 	}
 
 	public String getTelefono() {
-		return telefono;
+		return new String(telefono);
 	}
 
 	public void setTelefono(String telefono) {
 		if (telefono == null) {
 			throw new NullPointerException("ERROR: El teléfono no puede ser nulo.");
-		} else if (dni.length() != 9) {
-			throw new IllegalArgumentException("ERROR: El teléfono debe ser de 9 números."); 
-		} else
-			this.telefono = telefono; //confirmamos que el telefono no sea nulo y que sea de 9 digitos.
+		} else {
+
+			Pattern patronTelefono;
+			Matcher comparaTelefono;
+
+			patronTelefono = Pattern.compile(ER_TELEFONO);
+			comparaTelefono = patronTelefono.matcher(telefono);
+
+			if (telefono.matches(comparaTelefono.group(1)))
+				this.telefono = telefono;
+		}
+		throw new IllegalArgumentException("ERROR: aaaaaaaahlfsdjk.");
+		// confirmamos que el telefono no sea nulo y que sea de 9 digitos.
 	}
 
-	public EDate getFechaNacimiento() {
-		return fechaNacimiento;
+	public LocalDate getFechaNacimiento() {
+		return new LocalDate(fechaNacimiento);
 	}
 
-	public void setFechaNacimiento(EDate fechaNacimiento) {
+	public void setFechaNacimiento(LocalDate fechaNacimiento) {
 		this.fechaNacimiento = fechaNacimiento;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(dni);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof Cliente))
+			return false;
+		Cliente other = (Cliente) obj;
+		return Objects.equals(dni, other.dni);
+	}
+
+	private String getIniciales() {
+		String stringTemporal = this.formateaNombre(nombre);
+		char primLetra, segunLetra = 0, tercerLetra = 0;
+
+		char[] charTemporal = stringTemporal.toCharArray();
+		primLetra = charTemporal[0];
+		int x;
+		for (x = 0; x < charTemporal.length; x++) {
+			if (charTemporal[x] == ' ' || charTemporal[x] == '.' || charTemporal[x] == ',') {
+				segunLetra = Character.toUpperCase(charTemporal[x + 1]);
+				break;
+			}
+
+		}
+
+		for (x++; x < charTemporal.length; x++) {
+			if (charTemporal[x] == ' ' || charTemporal[x] == '.' || charTemporal[x] == ',') {
+				tercerLetra = Character.toUpperCase(charTemporal[x + 1]);
+				break;
+			}
+
+		}
+
+		return new String(primLetra + "." + segunLetra + "." + tercerLetra);
+		// con formateaNombre tenemos el nombre bien. Hacemos el metodo que vaya pasando
+		// por todo el nombre y cuando detecte un " " espacio, que haga i++ y lo guarde
+		// en "iniciales", cuando el nombre acabase, tendriamos las iniciales.
+
+	}
+
+	@Override
+	public String toString() {
+		return "Cliente [nombre=" + getIniciales() + " " + formateaNombre(nombre) + ", dni=" + dni + ", correo="
+				+ correo + ", telefono=" + telefono + "]";
 	}
 
 }
