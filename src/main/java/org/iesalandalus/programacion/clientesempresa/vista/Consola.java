@@ -14,6 +14,7 @@ public class Consola {
 	}
 
 	public static void mostrarMenu() {
+		System.out.println("-------------------------------------------");
 		System.out.println("Las distintas opciones son:");
 		System.out.println("1. Insertar un cliente.");
 		System.out.println("2. Buscar un cliente.");
@@ -61,7 +62,7 @@ public class Consola {
 
 	}
 
-	public Cliente leerCliente() {
+	public static Cliente leerCliente() {
 		DateTimeFormatter formatoLargo = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 		System.out.println("Por favor, introduzca los datos del cliente que son:");
@@ -84,14 +85,13 @@ public class Consola {
 		}
 		System.out.println("Su fecha de nacimiento en formato dd/mm/yyyy:");
 		String fechaNacimientoCliente = Entrada.cadena();
-		String fechaDate = fechaNacimientoCliente.formatted(formatoLargo);
-		LocalDate fechaConvertida = LocalDate.parse(fechaDate);
+		LocalDate fechaConvertida = LocalDate.parse(fechaNacimientoCliente, formatoLargo);
 
 		Cliente clienteALeer = new Cliente(nombreCliente, dniCliente, correoCliente, telefonoCliente, fechaConvertida);
 		return clienteALeer;
 	}
 
-	public Cliente leerClienteDni() {
+	public static Cliente leerClienteDni() {
 		System.out.println("Introduzca el DNI del cliente:");
 		String dniCliente = Entrada.cadena();
 		while (dniCliente.length() != 9) {
@@ -103,13 +103,12 @@ public class Consola {
 		return test;
 	}
 
-	public LocalDate leerFechaNacimiento() {
+	public static LocalDate leerFechaNacimiento() {
 		DateTimeFormatter formatoLargo = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		
 		System.out.println("Introduzca la fecha de nacimiento en formato dd/mm/yyyy:");
 		String fechaNacimientoCliente = Entrada.cadena();
-		String fechaDate = fechaNacimientoCliente.formatted(formatoLargo);
-		LocalDate fechaConvertida = LocalDate.parse(fechaDate);
+		LocalDate fechaConvertida = LocalDate.parse(fechaNacimientoCliente, formatoLargo);
 		return fechaConvertida;
 
 	}
